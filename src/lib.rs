@@ -1,5 +1,8 @@
 use rand::{thread_rng, Rng};
-use std::{collections::HashSet, fmt::{Display, Write}, hash::Hash};
+use std::{
+    collections::HashSet,
+    fmt::{Display, Write},
+};
 
 pub type Position = (usize, usize);
 pub enum OpenResult {
