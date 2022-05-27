@@ -1,5 +1,5 @@
 use rand::{thread_rng, Rng};
-use std::{collections::HashSet, hash::Hash};
+use std::{collections::HashSet, fmt::{Display, Write}, hash::Hash};
 
 pub type Position = (usize, usize);
 pub enum OpenResult {
@@ -14,6 +14,26 @@ pub struct Minesweeper {
     open_fields: HashSet<Position>,
     mines: HashSet<Position>,
     flagged_fields: HashSet<Position>,
+}
+
+impl Display for Minesweeper {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let pos = (x, y);
+
+                if !self.open_fields.contains(&pos) {
+                    f.write_str("🟪 ")?;
+                } else if self.mines.contains(&pos) {
+                    f.write_str("💣 ")?;
+                } else {
+                    write!(f, "{}  ", self.neighbouring_mines(pos))?;
+                }
+            }
+            f.write_char('\n')?;
+        }
+        Ok(())
+    }
 }
 
 impl Minesweeper {
@@ -39,7 +59,7 @@ impl Minesweeper {
         }
     }
 
-    fn neighbours(&self, (x, y): Position) -> impl Iterator<Item = Position> {
+    fn iter_neighbours(&self, (x, y): Position) -> impl Iterator<Item = Position> {
         let width = self.width;
         let height = self.height;
 
@@ -48,7 +68,11 @@ impl Minesweeper {
             .filter(move |&pos| pos != (x, y))
     }
 
-    fn neighbouring_mines(&self, (x, y): Position))
+    fn neighbouring_mines(&self, pos: Position) -> u8 {
+        self.iter_neighbours(pos)
+            .filter(|pos| self.mines.contains(pos))
+            .count() as u8
+    }
 
     fn gen_mines(width: usize, height: usize, mine_count: usize) -> HashSet<Position> {
         let mut rng = thread_rng();
@@ -66,8 +90,9 @@ mod tests {
 
     #[test]
     fn test() {
-        let ms = Minesweeper::new(10, 10, 5);
+        let mut ms = Minesweeper::new(10, 10, 15);
+        ms.open((5, 5));
 
-        println!("{:?}", ms);
+        println!("{}", ms);
     }
 }
